@@ -3,19 +3,29 @@ package com.example.robotcontroller;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
 
+import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.UUID;
 
 public class MainActivity extends AppCompatActivity {
+    private static final String TAG = "MainActivity";
     private String deviceName = null;
     private String deviceAddress;
     public static Handler handler;
@@ -26,6 +36,7 @@ public class MainActivity extends AppCompatActivity {
     private final static int CONNECTING_STATUS = 1;
     private final static int MESSAGE_READ = 2;
 
+    @SuppressLint("SetTextI18n")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -33,11 +44,16 @@ public class MainActivity extends AppCompatActivity {
 
         //UI
         final CardView btnPower = findViewById(R.id.btnPower);
+        final TextView txtBluetoothStatus = findViewById(R.id.txtBluetoothStatus);
+        final ProgressBar progressBar = findViewById(R.id.progressBar);
+            //MOVING
         final CardView btnSpin = findViewById(R.id.btnSpin);
         final ImageView btnTurnLeft = findViewById(R.id.btnTurnLeft);
         final ImageView btnTurnRight = findViewById(R.id.btnTurnRight);
         final ImageView btnMoveOn = findViewById(R.id.btnMoveOn);
         final ImageView btnGoBack = findViewById(R.id.btnGoBack);
+            //EXTEND
+        final CardView btn1 = findViewById(R.id.btn1);
 
 
         // If a bluetooth device has been selected from SelectDeviceActivity
@@ -45,10 +61,10 @@ public class MainActivity extends AppCompatActivity {
         if (deviceName != null){
             // Get the device address to make BT Connection
             deviceAddress = getIntent().getStringExtra("deviceAddress");
-            // Show progree and connection status
-            toolbar.setSubtitle("Connecting to " + deviceName + "...");
+            // Show progress and connection status
+            txtBluetoothStatus.setText("Connecting to " + deviceName + "...");
             progressBar.setVisibility(View.VISIBLE);
-            buttonConnect.setEnabled(false);
+            btnPower.setEnabled(false);
 
             /*
             This is the most important piece of code. When "deviceName" is found
@@ -70,15 +86,14 @@ public class MainActivity extends AppCompatActivity {
                     case CONNECTING_STATUS:
                         switch(msg.arg1){
                             case 1:
-                                toolbar.setSubtitle("Connected to " + deviceName);
+                                txtBluetoothStatus.setText("Connected to " + deviceName);
                                 progressBar.setVisibility(View.GONE);
-                                buttonConnect.setEnabled(true);
-                                buttonToggle.setEnabled(true);
+                                btnPower.setEnabled(true);
                                 break;
                             case -1:
-                                toolbar.setSubtitle("Device fails to connect");
+                                txtBluetoothStatus.setText("Device fails to connect");
                                 progressBar.setVisibility(View.GONE);
-                                buttonConnect.setEnabled(true);
+                                btnPower.setEnabled(true);
                                 break;
                         }
                         break;
@@ -87,12 +102,12 @@ public class MainActivity extends AppCompatActivity {
                         String arduinoMsg = msg.obj.toString(); // Read message from Arduino
                         switch (arduinoMsg.toLowerCase()){
                             case "led is turned on":
-                                imageView.setBackgroundColor(getResources().getColor(R.color.colorOn));
-                                textViewInfo.setText("Arduino Message : " + arduinoMsg);
+                                btn1.setCardBackgroundColor(getResources().getColor(R.color.green));
+                                Toast.makeText(MainActivity.this, arduinoMsg, Toast.LENGTH_SHORT).show();
                                 break;
                             case "led is turned off":
-                                imageView.setBackgroundColor(getResources().getColor(R.color.colorOff));
-                                textViewInfo.setText("Arduino Message : " + arduinoMsg);
+                                btn1.setCardBackgroundColor(getResources().getColor(R.color.white));
+                                Toast.makeText(MainActivity.this, arduinoMsg, Toast.LENGTH_SHORT).show();
                                 break;
                         }
                         break;
@@ -101,36 +116,31 @@ public class MainActivity extends AppCompatActivity {
         };
 
         // Select Bluetooth Device
-        buttonConnect.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                // Move to adapter list
-                Intent intent = new Intent(MainActivity.this, SelectDeviceActivity.class);
-                startActivity(intent);
-            }
+        btnPower.setOnClickListener(view -> {
+            // Move to adapter list
+            Intent intent = new Intent(MainActivity.this, SelectDeviceActivity.class);
+            startActivity(intent);
         });
 
         // Button to ON/OFF LED on Arduino Board
-        buttonToggle.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                String cmdText = null;
-                String btnState = buttonToggle.getText().toString().toLowerCase();
-                switch (btnState){
-                    case "turn on":
-                        buttonToggle.setText("Turn Off");
-                        // Command to turn on LED on Arduino. Must match with the command in Arduino code
-                        cmdText = "<turn on>";
-                        break;
-                    case "turn off":
-                        buttonToggle.setText("Turn On");
-                        // Command to turn off LED on Arduino. Must match with the command in Arduino code
-                        cmdText = "<turn off>";
-                        break;
-                }
-                // Send command to Arduino board
-                connectedThread.write(cmdText);
+        btn1.setOnClickListener(view -> {
+            TextView content = view.findViewById(R.id.txtBtn1);
+            String cmdText = null;
+            String btnState = content.getText().toString().toLowerCase();
+            switch (btnState){
+                case "turn on":
+                    content.setText("Turn Off");
+                    // Command to turn on LED on Arduino. Must match with the command in Arduino code
+                    cmdText = "<turn on>";
+                    break;
+                case "turn off":
+                    content.setText("Turn On");
+                    // Command to turn off LED on Arduino. Must match with the command in Arduino code
+                    cmdText = "<turn off>";
+                    break;
             }
+            // Send command to Arduino board
+            connectedThread.write(cmdText);
         });
     }
 
