@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">Robot Controller</string>
+    <string name="bluetooth_connection">BLUETOOTH CONNECTION</string>
+    <string name="go_back">go back</string>
+    <string name="move_on">move on</string>
+    <string name="turn_right">turn right</string>
+    <string name="turn_left">turn left</string>
+    <string name="spin">spin</string>
+    <string name="power">power</string>
+</resources>
