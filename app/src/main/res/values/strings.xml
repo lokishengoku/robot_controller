@@ -7,4 +7,12 @@
     <string name="turn_left">turn left</string>
     <string name="spin">spin</string>
     <string name="power">power</string>
+    <string name="device_name">DEVICE NAME</string>
+    <string name="device_address">Device address</string>
+    <string name="xin_ch_o">Xin chào</string>
+    <string name="t_m_bi_t">Tạm biệt</string>
+    <string name="nh_y">Nhảy</string>
+    <string name="talk">Kể chuyện</string>
+    <string name="ng_y_gi">Ngày giờ</string>
+    <string name="developed_by_ldt">Developed by LDT</string>
 </resources>
