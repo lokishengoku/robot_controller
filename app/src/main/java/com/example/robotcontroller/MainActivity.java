@@ -8,6 +8,7 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -22,6 +23,8 @@ import android.widget.Toast;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.Objects;
 import java.util.UUID;
 
 public class MainActivity extends AppCompatActivity {
@@ -35,42 +38,61 @@ public class MainActivity extends AppCompatActivity {
 
     private final static int CONNECTING_STATUS = 1;
     private final static int MESSAGE_READ = 2;
+    private boolean isConnected = false;
+    private final static String[] cmds = {
+            "0",    //  move on
+            "1",    //  move back
+            "2",    //  turn left
+            "3",    //  turn right
+            "4",    //  spin
+            "5",    //  hello
+            "6",    //  goodbye
+            "7",    //  talk
+            "8",    //  dance
+            "9"     //  time
+    };
 
     @SuppressLint("SetTextI18n")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        Objects.requireNonNull(getSupportActionBar()).hide();
 
-        //UI
+        //_______________________UI_________________________
+            //CONNECTION
         final CardView btnPower = findViewById(R.id.btnPower);
         final TextView txtBluetoothStatus = findViewById(R.id.txtBluetoothStatus);
+            //PROGRESS
         final ProgressBar progressBar = findViewById(R.id.progressBar);
             //MOVING
         final CardView btnSpin = findViewById(R.id.btnSpin);
         final ImageView btnTurnLeft = findViewById(R.id.btnTurnLeft);
         final ImageView btnTurnRight = findViewById(R.id.btnTurnRight);
         final ImageView btnMoveOn = findViewById(R.id.btnMoveOn);
-        final ImageView btnGoBack = findViewById(R.id.btnGoBack);
+        final ImageView btnMoveBack = findViewById(R.id.btnGoBack);
             //EXTEND
-        final CardView btn1 = findViewById(R.id.btn1);
+        final CardView btnHello = findViewById(R.id.btnHello);
+        final CardView btnGoodbye = findViewById(R.id.btnGoodbye);
+        final CardView btnTalk = findViewById(R.id.btnTalk);
+        final CardView btnDance = findViewById(R.id.btnDance);
+        final CardView btnTime = findViewById(R.id.btnTime);
 
 
+        //______________________FIRST START____________________________
         // If a bluetooth device has been selected from SelectDeviceActivity
         deviceName = getIntent().getStringExtra("deviceName");
         if (deviceName != null){
-            // Get the device address to make BT Connection
+            // Get the device (Bluetooth) address
             deviceAddress = getIntent().getStringExtra("deviceAddress");
             // Show progress and connection status
             txtBluetoothStatus.setText("Connecting to " + deviceName + "...");
+            txtBluetoothStatus.setTextColor(Color.rgb(247, 221, 114));
             progressBar.setVisibility(View.VISIBLE);
+            btnPower.setCardBackgroundColor(Color.rgb(247, 221, 114));
             btnPower.setEnabled(false);
 
-            /*
-            This is the most important piece of code. When "deviceName" is found
-            the code will call a new thread to create a bluetooth connection to the
-            selected device (see the thread code below)
-             */
+            // Creating bluetooth connection
             BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
             createConnectThread = new CreateConnectThread(bluetoothAdapter,deviceAddress);
             createConnectThread.start();
@@ -87,61 +109,115 @@ public class MainActivity extends AppCompatActivity {
                         switch(msg.arg1){
                             case 1:
                                 txtBluetoothStatus.setText("Connected to " + deviceName);
+                                txtBluetoothStatus.setTextColor(Color.rgb(169, 251, 215));
                                 progressBar.setVisibility(View.GONE);
+                                btnPower.setCardBackgroundColor(Color.rgb(169, 251, 215));
                                 btnPower.setEnabled(true);
+                                isConnected = true;
                                 break;
                             case -1:
-                                txtBluetoothStatus.setText("Device fails to connect");
+                                txtBluetoothStatus.setText("Connection failed. Please try again!");
+                                txtBluetoothStatus.setTextColor(Color.rgb(197, 34, 51));
                                 progressBar.setVisibility(View.GONE);
+                                btnPower.setCardBackgroundColor(Color.rgb(197, 34, 51));
                                 btnPower.setEnabled(true);
+                                isConnected = false;
                                 break;
                         }
                         break;
 
+                    // Receiving message from board
                     case MESSAGE_READ:
-                        String arduinoMsg = msg.obj.toString(); // Read message from Arduino
-                        switch (arduinoMsg.toLowerCase()){
-                            case "led is turned on":
-                                btn1.setCardBackgroundColor(getResources().getColor(R.color.green));
-                                Toast.makeText(MainActivity.this, arduinoMsg, Toast.LENGTH_SHORT).show();
-                                break;
-                            case "led is turned off":
-                                btn1.setCardBackgroundColor(getResources().getColor(R.color.white));
-                                Toast.makeText(MainActivity.this, arduinoMsg, Toast.LENGTH_SHORT).show();
-                                break;
-                        }
+                        String receiveMsg = msg.obj.toString(); // Read message
+                        if (!receiveMsg.isEmpty())
+                            Toast.makeText(MainActivity.this, "Robot: "+receiveMsg, Toast.LENGTH_SHORT).show();
+//                        switch (receiveMsg.toLowerCase()){
+//                            case "something":
+//                                //do sth
+//                        }
                         break;
                 }
             }
         };
 
-        // Select Bluetooth Device
+        // Select Bluetooth Device Or Disconnect
         btnPower.setOnClickListener(view -> {
-            // Move to adapter list
-            Intent intent = new Intent(MainActivity.this, SelectDeviceActivity.class);
-            startActivity(intent);
+            if (isConnected){
+                //Disconnect
+                connectedThread.cancel();
+                btnPower.setCardBackgroundColor(Color.rgb(97, 132, 216));
+                txtBluetoothStatus.setTextColor(Color.WHITE);
+                txtBluetoothStatus.setText("Press to connect");
+                isConnected = false;
+            } else {
+                // Select Device
+                Intent intent = new Intent(MainActivity.this, SelectDeviceActivity.class);
+                startActivity(intent);
+            }
         });
 
-        // Button to ON/OFF LED on Arduino Board
-        btn1.setOnClickListener(view -> {
-            TextView content = view.findViewById(R.id.txtBtn1);
-            String cmdText = null;
-            String btnState = content.getText().toString().toLowerCase();
-            switch (btnState){
-                case "turn on":
-                    content.setText("Turn Off");
-                    // Command to turn on LED on Arduino. Must match with the command in Arduino code
-                    cmdText = "<turn on>";
-                    break;
-                case "turn off":
-                    content.setText("Turn On");
-                    // Command to turn off LED on Arduino. Must match with the command in Arduino code
-                    cmdText = "<turn off>";
-                    break;
-            }
-            // Send command to Arduino board
-            connectedThread.write(cmdText);
-        });
+        // buttons click listener
+        btnMoveOn.setOnClickListener(v -> {
+            if(isConnected) 
+                connectedThread.write(cmds[0]);
+            else
+                Toast.makeText(this, "Please connect connect to the board and try again!", Toast.LENGTH_SHORT).show();
+        });       //0
+        btnMoveBack.setOnClickListener(v -> {
+            if(isConnected)
+                connectedThread.write(cmds[1]);
+            else
+                Toast.makeText(this, "Please connect connect to the board and try again!", Toast.LENGTH_SHORT).show();
+        });     //1
+        btnTurnLeft.setOnClickListener(v -> {
+            if(isConnected)
+                connectedThread.write(cmds[2]);
+            else
+                Toast.makeText(this, "Please connect connect to the board and try again!", Toast.LENGTH_SHORT).show();
+        });     //2
+        btnTurnRight.setOnClickListener(v -> {
+            if(isConnected)
+                connectedThread.write(cmds[3]);
+            else
+                Toast.makeText(this, "Please connect connect to the board and try again!", Toast.LENGTH_SHORT).show();
+        });    //3
+        btnSpin.setOnClickListener(v -> {
+            if(isConnected)
+                connectedThread.write(cmds[4]);
+            else
+                Toast.makeText(this, "Please connect connect to the board and try again!", Toast.LENGTH_SHORT).show();
+        });         //4
+        btnHello.setOnClickListener(v -> {
+            if(isConnected)
+                connectedThread.write(cmds[5]);
+            else
+                Toast.makeText(this, "Please connect connect to the board and try again!", Toast.LENGTH_SHORT).show();
+        });        //5
+        btnGoodbye.setOnClickListener(v -> {
+            if(isConnected)
+                connectedThread.write(cmds[6]);
+            else
+                Toast.makeText(this, "Please connect connect to the board and try again!", Toast.LENGTH_SHORT).show();
+        });      //6
+        btnTalk.setOnClickListener(v -> {
+            if(isConnected)
+                connectedThread.write(cmds[7]);
+            else
+                Toast.makeText(this, "Please connect connect to the board and try again!", Toast.LENGTH_SHORT).show();
+        });         //7
+        btnDance.setOnClickListener(v -> {
+            if(isConnected)
+                connectedThread.write(cmds[8]);
+            else
+                Toast.makeText(this, "Please connect connect to the board and try again!", Toast.LENGTH_SHORT).show();
+        });        //8
+        btnTime.setOnClickListener(v -> {
+            if(isConnected)
+                connectedThread.write(cmds[8]);
+            else
+                Toast.makeText(this, "Please connect connect to the board and try again!", Toast.LENGTH_SHORT).show();
+        });         //9
+
     }
 
     /* ============================ Thread to Create Bluetooth Connection =================================== */
@@ -225,7 +301,9 @@ public class MainActivity extends AppCompatActivity {
             try {
                 tmpIn = socket.getInputStream();
                 tmpOut = socket.getOutputStream();
-            } catch (IOException e) { }
+            } catch (IOException e) {
+                Log.e(TAG, "ConnectedThread: "+e.getMessage() );
+            }
 
             mmInStream = tmpIn;
             mmOutStream = tmpOut;
@@ -238,14 +316,14 @@ public class MainActivity extends AppCompatActivity {
             while (true) {
                 try {
                     /*
-                    Read from the InputStream from Arduino until termination character is reached.
+                    Read from the InputStream from board until termination character is reached.
                     Then send the whole String message to GUI Handler.
                      */
                     buffer[bytes] = (byte) mmInStream.read();
                     String readMessage;
                     if (buffer[bytes] == '\n'){
                         readMessage = new String(buffer,0,bytes);
-                        Log.e("Arduino Message",readMessage);
+                        Log.e("Board Message",readMessage);
                         handler.obtainMessage(MESSAGE_READ,readMessage).sendToTarget();
                         bytes = 0;
                     } else {
@@ -272,7 +350,9 @@ public class MainActivity extends AppCompatActivity {
         public void cancel() {
             try {
                 mmSocket.close();
-            } catch (IOException e) { }
+            } catch (IOException e) {
+                Log.e(TAG, "cancel: "+e.getMessage() );
+            }
         }
     }
 

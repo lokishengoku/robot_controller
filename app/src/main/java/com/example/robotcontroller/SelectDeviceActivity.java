@@ -14,6 +14,7 @@ import com.google.android.material.snackbar.Snackbar;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 public class SelectDeviceActivity extends AppCompatActivity {
@@ -22,6 +23,7 @@ public class SelectDeviceActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_select_device);
+        Objects.requireNonNull(getSupportActionBar()).setTitle("Select Device");
 
         // Bluetooth Setup
         BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
@@ -46,10 +48,7 @@ public class SelectDeviceActivity extends AppCompatActivity {
         } else {
             View view = findViewById(R.id.recyclerViewDevice);
             Snackbar snackbar = Snackbar.make(view, "Activate Bluetooth or pair a Bluetooth device", Snackbar.LENGTH_INDEFINITE);
-            snackbar.setAction("OK", new View.OnClickListener() {
-                @Override
-                public void onClick(View view) { }
-            });
+            snackbar.setAction("OK", view1 -> { });
             snackbar.show();
         }
 
