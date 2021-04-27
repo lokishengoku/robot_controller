@@ -15,6 +15,7 @@
         app:cardBackgroundColor="#6184D8"
         app:cardCornerRadius="52dp"
         app:contentPadding="15dp"
+        android:foreground="?android:attr/selectableItemBackground"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textView">
@@ -57,6 +58,7 @@
                 app:cardBackgroundColor="@color/dark"
                 app:cardCornerRadius="60dp"
                 app:contentPadding="20dp"
+                android:foreground="?android:attr/selectableItemBackground"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
@@ -77,6 +79,7 @@
                 android:layout_marginStart="8dp"
                 android:layout_marginEnd="8dp"
                 android:contentDescription="@string/turn_left"
+                style="?android:borderlessButtonStyle"
                 app:layout_constraintBottom_toBottomOf="@+id/btnSpin"
                 app:layout_constraintEnd_toStartOf="@+id/btnSpin"
                 app:layout_constraintStart_toStartOf="parent"
@@ -90,6 +93,7 @@
                 android:layout_marginStart="8dp"
                 android:layout_marginEnd="8dp"
                 android:contentDescription="@string/turn_right"
+                style="?android:borderlessButtonStyle"
                 app:layout_constraintBottom_toBottomOf="@+id/btnSpin"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toEndOf="@+id/btnSpin"
@@ -103,6 +107,7 @@
                 android:layout_marginTop="8dp"
                 android:layout_marginBottom="8dp"
                 android:contentDescription="@string/move_on"
+                style="?android:borderlessButtonStyle"
                 app:layout_constraintBottom_toTopOf="@+id/btnSpin"
                 app:layout_constraintEnd_toEndOf="@+id/btnSpin"
                 app:layout_constraintStart_toStartOf="@+id/btnSpin"
@@ -116,6 +121,7 @@
                 android:layout_marginTop="8dp"
                 android:layout_marginBottom="8dp"
                 android:contentDescription="@string/go_back"
+                style="?android:borderlessButtonStyle"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="@+id/btnSpin"
                 app:layout_constraintStart_toStartOf="@+id/btnSpin"
@@ -153,7 +159,8 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginVertical="12dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="8dp"
             android:gravity="center"
             android:orientation="horizontal">
 
@@ -162,6 +169,7 @@
                 android:layout_width="100dp"
                 android:layout_height="wrap_content"
                 android:layout_marginHorizontal="8dp"
+                android:foreground="?android:attr/selectableItemBackground"
                 app:cardCornerRadius="50dp">
 
                 <TextView
@@ -180,6 +188,7 @@
                 android:layout_width="100dp"
                 android:layout_height="wrap_content"
                 android:layout_marginHorizontal="8dp"
+                android:foreground="?android:attr/selectableItemBackground"
                 app:cardCornerRadius="50dp">
 
                 <TextView
@@ -198,6 +207,7 @@
                 android:layout_width="100dp"
                 android:layout_height="wrap_content"
                 android:layout_marginHorizontal="8dp"
+                android:foreground="?android:attr/selectableItemBackground"
                 app:cardCornerRadius="50dp">
 
                 <TextView
@@ -221,9 +231,10 @@
 
             <androidx.cardview.widget.CardView
                 android:id="@+id/btnHello"
-                android:layout_width="130dp"
+                android:layout_width="123dp"
                 android:layout_height="wrap_content"
                 android:layout_marginHorizontal="15dp"
+                android:foreground="?android:attr/selectableItemBackground"
                 app:cardCornerRadius="50dp">
 
                 <TextView
@@ -238,10 +249,29 @@
             </androidx.cardview.widget.CardView>
 
             <androidx.cardview.widget.CardView
+                android:id="@+id/btnStop"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:foreground="?android:attr/selectableItemBackground"
+                app:cardBackgroundColor="@color/light_red"
+                app:cardCornerRadius="52dp"
+                app:contentPadding="12dp">
+
+                <ImageView
+                    android:id="@+id/imageView7"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:contentDescription="@string/power"
+                    app:srcCompat="@drawable/ic_round_stop_24"
+                    app:tint="@color/white" />
+            </androidx.cardview.widget.CardView>
+
+            <androidx.cardview.widget.CardView
                 android:id="@+id/btnGoodbye"
-                android:layout_width="130dp"
+                android:layout_width="123dp"
                 android:layout_height="wrap_content"
                 android:layout_marginHorizontal="15dp"
+                android:foreground="?android:attr/selectableItemBackground"
                 app:cardCornerRadius="50dp">
 
                 <TextView
@@ -264,7 +294,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
         android:fontFamily="@font/raleway"
-        android:text="Press to connect"
+        android:text="@string/press_to_connect"
         android:textColor="@color/white"
         app:layout_constraintEnd_toEndOf="@+id/btnPower"
         app:layout_constraintStart_toStartOf="@+id/btnPower"

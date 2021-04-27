@@ -49,7 +49,8 @@ public class MainActivity extends AppCompatActivity {
             "6",    //  goodbye
             "7",    //  talk
             "8",    //  dance
-            "9"     //  time
+            "9",    //  time
+            "10"    // stop
     };
 
     @SuppressLint("SetTextI18n")
@@ -77,6 +78,7 @@ public class MainActivity extends AppCompatActivity {
         final CardView btnTalk = findViewById(R.id.btnTalk);
         final CardView btnDance = findViewById(R.id.btnDance);
         final CardView btnTime = findViewById(R.id.btnTime);
+        final CardView btnStop = findViewById(R.id.btnStop);
 
 
         //______________________FIRST START____________________________
@@ -213,11 +215,16 @@ public class MainActivity extends AppCompatActivity {
         });        //8
         btnTime.setOnClickListener(v -> {
             if(isConnected)
-                connectedThread.write(cmds[8]);
+                connectedThread.write(cmds[9]);
             else
                 Toast.makeText(this, "Please connect connect to the board and try again!", Toast.LENGTH_SHORT).show();
         });         //9
-
+        btnStop.setOnClickListener(v -> {
+            if(isConnected)
+                connectedThread.write(cmds[10]);
+            else
+                Toast.makeText(this, "Please connect connect to the board and try again!", Toast.LENGTH_SHORT).show();
+        });         //10
     }
 
     /* ============================ Thread to Create Bluetooth Connection =================================== */
