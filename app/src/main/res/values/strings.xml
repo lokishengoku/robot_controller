@@ -1,6 +1,6 @@
 <resources>
     <string name="app_name">Robot Controller</string>
-    <string name="bluetooth_connection">BLUETOOTH CONNECTION</string>
+    <string name="bluetooth_connection">ROBOT CONTROLLER</string>
     <string name="go_back">go back</string>
     <string name="move_on">move on</string>
     <string name="turn_right">turn right</string>
@@ -10,10 +10,14 @@
     <string name="device_name">DEVICE NAME</string>
     <string name="device_address">Device address</string>
     <string name="xin_ch_o">Xin chào</string>
-    <string name="t_m_bi_t">Tạm biệt</string>
+    <string name="t_m_bi_t">Bật nhạc</string>
     <string name="nh_y">Nhảy</string>
     <string name="talk">Kể chuyện</string>
     <string name="ng_y_gi">Ngày giờ</string>
     <string name="developed_by_ldt">Developed by LDT</string>
     <string name="press_to_connect">Press to connect</string>
+
+    <string name="toast_connected_to">Connected to</string>
+    <string name="toast_unable_to_connect">Unable to connect device</string>
+    <string name="toast_connection_lost">Device connection was lost</string>
 </resources>

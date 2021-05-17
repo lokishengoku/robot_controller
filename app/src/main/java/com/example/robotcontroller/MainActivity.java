@@ -7,7 +7,10 @@ import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
@@ -23,12 +26,13 @@ import android.widget.Toast;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.ArrayList;
+import java.lang.reflect.Method;
 import java.util.Objects;
 import java.util.UUID;
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
+
     private String deviceName = null;
     private String deviceAddress;
     public static Handler handler;
@@ -36,22 +40,28 @@ public class MainActivity extends AppCompatActivity {
     public static ConnectedThread connectedThread;
     public static CreateConnectThread createConnectThread;
 
+    public static final int MESSAGE_READ = 2;
     private final static int CONNECTING_STATUS = 1;
-    private final static int MESSAGE_READ = 2;
     private boolean isConnected = false;
     private final static String[] cmds = {
-            "0",    //  move on
-            "1",    //  move back
+            "0",    //  go ahead
+            "1",    //  go back
             "2",    //  turn left
             "3",    //  turn right
             "4",    //  spin
             "5",    //  hello
-            "6",    //  goodbye
+            "6",    //  music
             "7",    //  talk
             "8",    //  dance
             "9",    //  time
             "10"    // stop
     };
+
+    //CONNECTION
+    private CardView btnPower;
+    private TextView txtBluetoothStatus;
+    //PROGRESSBAR
+    private ProgressBar progressBar;
 
     @SuppressLint("SetTextI18n")
     @Override
@@ -62,10 +72,10 @@ public class MainActivity extends AppCompatActivity {
 
         //_______________________UI_________________________
             //CONNECTION
-        final CardView btnPower = findViewById(R.id.btnPower);
-        final TextView txtBluetoothStatus = findViewById(R.id.txtBluetoothStatus);
+        btnPower = findViewById(R.id.btnPower);
+        txtBluetoothStatus = findViewById(R.id.txtBluetoothStatus);
             //PROGRESS
-        final ProgressBar progressBar = findViewById(R.id.progressBar);
+        progressBar = findViewById(R.id.progressBar);
             //MOVING
         final CardView btnSpin = findViewById(R.id.btnSpin);
         final ImageView btnTurnLeft = findViewById(R.id.btnTurnLeft);
@@ -100,6 +110,12 @@ public class MainActivity extends AppCompatActivity {
             createConnectThread.start();
         }
 
+        IntentFilter mFilter = new IntentFilter();
+        mFilter.addAction(BluetoothDevice.ACTION_ACL_CONNECTED);
+        mFilter.addAction(BluetoothDevice.ACTION_ACL_DISCONNECTED);
+        mFilter.addAction(BluetoothAdapter.ACTION_STATE_CHANGED);
+        registerReceiver(mBroadcastReceiver, mFilter);
+
         /*
         Second most important piece of Code. GUI Handler
          */
@@ -116,6 +132,8 @@ public class MainActivity extends AppCompatActivity {
                                 btnPower.setCardBackgroundColor(Color.rgb(169, 251, 215));
                                 btnPower.setEnabled(true);
                                 isConnected = true;
+
+
                                 break;
                             case -1:
                                 txtBluetoothStatus.setText("Connection failed. Please try again!");
@@ -151,6 +169,11 @@ public class MainActivity extends AppCompatActivity {
                 txtBluetoothStatus.setTextColor(Color.WHITE);
                 txtBluetoothStatus.setText("Press to connect");
                 isConnected = false;
+                try {
+                    mmSocket.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             } else {
                 // Select Device
                 Intent intent = new Intent(MainActivity.this, SelectDeviceActivity.class);
@@ -159,72 +182,27 @@ public class MainActivity extends AppCompatActivity {
         });
 
         // buttons click listener
-        btnMoveOn.setOnClickListener(v -> {
-            if(isConnected) 
-                connectedThread.write(cmds[0]);
-            else
-                Toast.makeText(this, "Please connect connect to the board and try again!", Toast.LENGTH_SHORT).show();
-        });       //0
-        btnMoveBack.setOnClickListener(v -> {
-            if(isConnected)
-                connectedThread.write(cmds[1]);
-            else
-                Toast.makeText(this, "Please connect connect to the board and try again!", Toast.LENGTH_SHORT).show();
-        });     //1
-        btnTurnLeft.setOnClickListener(v -> {
-            if(isConnected)
-                connectedThread.write(cmds[2]);
-            else
-                Toast.makeText(this, "Please connect connect to the board and try again!", Toast.LENGTH_SHORT).show();
-        });     //2
-        btnTurnRight.setOnClickListener(v -> {
-            if(isConnected)
-                connectedThread.write(cmds[3]);
-            else
-                Toast.makeText(this, "Please connect connect to the board and try again!", Toast.LENGTH_SHORT).show();
-        });    //3
-        btnSpin.setOnClickListener(v -> {
-            if(isConnected)
-                connectedThread.write(cmds[4]);
-            else
-                Toast.makeText(this, "Please connect connect to the board and try again!", Toast.LENGTH_SHORT).show();
-        });         //4
-        btnHello.setOnClickListener(v -> {
-            if(isConnected)
-                connectedThread.write(cmds[5]);
-            else
-                Toast.makeText(this, "Please connect connect to the board and try again!", Toast.LENGTH_SHORT).show();
-        });        //5
-        btnGoodbye.setOnClickListener(v -> {
-            if(isConnected)
-                connectedThread.write(cmds[6]);
-            else
-                Toast.makeText(this, "Please connect connect to the board and try again!", Toast.LENGTH_SHORT).show();
-        });      //6
-        btnTalk.setOnClickListener(v -> {
-            if(isConnected)
-                connectedThread.write(cmds[7]);
-            else
-                Toast.makeText(this, "Please connect connect to the board and try again!", Toast.LENGTH_SHORT).show();
-        });         //7
-        btnDance.setOnClickListener(v -> {
-            if(isConnected)
-                connectedThread.write(cmds[8]);
-            else
-                Toast.makeText(this, "Please connect connect to the board and try again!", Toast.LENGTH_SHORT).show();
-        });        //8
-        btnTime.setOnClickListener(v -> {
-            if(isConnected)
-                connectedThread.write(cmds[9]);
-            else
-                Toast.makeText(this, "Please connect connect to the board and try again!", Toast.LENGTH_SHORT).show();
-        });         //9
-        btnStop.setOnClickListener(v -> {
-            if(isConnected)
-                connectedThread.write(cmds[10]);
-            else
-                Toast.makeText(this, "Please connect connect to the board and try again!", Toast.LENGTH_SHORT).show();
-        });         //10
+        btnMoveOn.setOnClickListener(v -> checkConnectionAndTransmitData(cmds[0]));       //0
+        btnMoveBack.setOnClickListener(v -> checkConnectionAndTransmitData(cmds[1]));     //1
+        btnTurnLeft.setOnClickListener(v -> checkConnectionAndTransmitData(cmds[2]));     //2
+        btnTurnRight.setOnClickListener(v -> checkConnectionAndTransmitData(cmds[3]));    //3
+        btnSpin.setOnClickListener(v -> checkConnectionAndTransmitData(cmds[4]));         //4
+        btnHello.setOnClickListener(v -> checkConnectionAndTransmitData(cmds[5]));        //5
+        btnGoodbye.setOnClickListener(v -> checkConnectionAndTransmitData(cmds[6]));      //6
+        btnTalk.setOnClickListener(v -> checkConnectionAndTransmitData(cmds[7]));         //7
+        btnDance.setOnClickListener(v -> checkConnectionAndTransmitData(cmds[8]));        //8
+        btnTime.setOnClickListener(v -> checkConnectionAndTransmitData(cmds[9]));         //9
+        btnStop.setOnClickListener(v -> checkConnectionAndTransmitData(cmds[10]));         //10
+    }
+
+    // check bluetooth connection before transmit data
+    private void checkConnectionAndTransmitData(String data){
+        if(isConnected){
+            Log.d(TAG, "checkConnectionAndTransmitData: connected");
+            connectedThread.write(data);
+        } else {
+            Toast.makeText(this, "Please connect connect to the board and try again!", Toast.LENGTH_SHORT).show();
+        }
     }
 
     /* ============================ Thread to Create Bluetooth Connection =================================== */
@@ -237,19 +215,33 @@ public class MainActivity extends AppCompatActivity {
              */
             BluetoothDevice bluetoothDevice = bluetoothAdapter.getRemoteDevice(address);
             BluetoothSocket tmp = null;
-            UUID uuid = bluetoothDevice.getUuids()[0].getUuid();
+            UUID uuid = bluetoothDevice.getUuids()[0].getUuid();  //HC-05
+//            UUID uuid = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");    //pi
 
             try {
                 /*
                 Get a BluetoothSocket to connect with the given BluetoothDevice.
                 Due to Android device varieties,the method below may not work fo different devices.
-                You should try using other methods i.e. :
-                tmp = device.createRfcommSocketToServiceRecord(MY_UUID);
                  */
-                tmp = bluetoothDevice.createInsecureRfcommSocketToServiceRecord(uuid);
+                Method method;
 
-            } catch (IOException e) {
+                method = bluetoothDevice.getClass().getMethod("createRfcommSocket", new Class[] { int.class } );
+                tmp = (BluetoothSocket) method.invoke(bluetoothDevice, 1);
+
+            } catch (Exception e) {
                 Log.e(TAG, "Socket's create() method failed", e);
+
+                try {
+                    tmp = bluetoothDevice.createInsecureRfcommSocketToServiceRecord(uuid);
+                } catch (Exception e2) {
+                    Log.e(TAG, "Socket's create() method failed", e2);
+                    try {
+                        tmp = bluetoothDevice.createRfcommSocketToServiceRecord(uuid);
+                    } catch (Exception e3) {
+                        Log.e(TAG, "Socket's create() method failed", e3);
+
+                    }
+                }
             }
             mmSocket = tmp;
         }
@@ -374,5 +366,78 @@ public class MainActivity extends AppCompatActivity {
         a.addCategory(Intent.CATEGORY_HOME);
         a.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         startActivity(a);
+    }
+
+    // broadcast receiver: bluetooth events catching
+    private final BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {
+        @SuppressLint("SetTextI18n")
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+            try {
+                if (action.equals(BluetoothAdapter.ACTION_STATE_CHANGED)) {
+                    final int state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE,
+                            BluetoothAdapter.ERROR);
+                    switch (state) {
+                        case BluetoothAdapter.STATE_OFF:
+                            txtBluetoothStatus.setText("Bluetooth is turned off");
+                            txtBluetoothStatus.setTextColor(Color.rgb(197, 34, 51));
+                            progressBar.setVisibility(View.GONE);
+                            btnPower.setCardBackgroundColor(Color.rgb(197, 34, 51));
+                            btnPower.setEnabled(false);
+                            isConnected = false;
+                            mmSocket.close();
+                            break;
+                        case BluetoothAdapter.STATE_TURNING_OFF:
+                            txtBluetoothStatus.setText("Bluetooth is turning off");
+                            txtBluetoothStatus.setTextColor(Color.rgb(247, 221, 114));
+                            progressBar.setVisibility(View.VISIBLE);
+                            btnPower.setCardBackgroundColor(Color.rgb(247, 221, 114));
+                            btnPower.setEnabled(false);
+                            isConnected = false;
+                            mmSocket.close();
+                            break;
+                        case BluetoothAdapter.STATE_ON:
+                            txtBluetoothStatus.setText("Press to connect");
+                            txtBluetoothStatus.setTextColor(Color.rgb(250,250,250));
+                            progressBar.setVisibility(View.GONE);
+                            btnPower.setCardBackgroundColor(Color.rgb(97,132,216));
+                            btnPower.setEnabled(true);
+                            isConnected = false;
+                            break;
+                        case BluetoothAdapter.STATE_TURNING_ON:
+                            txtBluetoothStatus.setText("Bluetooth is turning on");
+                            txtBluetoothStatus.setTextColor(Color.rgb(247, 221, 114));
+                            progressBar.setVisibility(View.VISIBLE);
+                            btnPower.setCardBackgroundColor(Color.rgb(247, 221, 114));
+                            btnPower.setEnabled(false);
+                            isConnected = false;
+                            break;
+                    }
+                } else if (BluetoothDevice.ACTION_ACL_DISCONNECTED.equals(action)) {
+                    if (isConnected) {
+                        txtBluetoothStatus.setText("Disconnected");
+                        txtBluetoothStatus.setTextColor(Color.rgb(197, 34, 51));
+                        progressBar.setVisibility(View.GONE);
+                        btnPower.setCardBackgroundColor(Color.rgb(197, 34, 51));
+                        btnPower.setEnabled(true);
+                        isConnected = false;
+                        mmSocket.close();
+                    }
+                }
+            } catch (Exception e){
+                Log.e(TAG, "onReceive: ", e);
+                Toast.makeText(MainActivity.this, "Oops! An error occurred", Toast.LENGTH_SHORT).show();
+            }
+
+        }
+
+    };
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+        unregisterReceiver(mBroadcastReceiver);
     }
 }
