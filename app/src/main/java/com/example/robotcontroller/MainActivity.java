@@ -1,6 +1,7 @@
 package com.example.robotcontroller;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.cardview.widget.CardView;
 
 import android.annotation.SuppressLint;
@@ -11,11 +12,13 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+import android.os.Parcelable;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
@@ -63,12 +66,20 @@ public class MainActivity extends AppCompatActivity {
     //PROGRESSBAR
     private ProgressBar progressBar;
 
-    @SuppressLint("SetTextI18n")
+    @SuppressLint({"SetTextI18n", "ResourceAsColor"})
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         Objects.requireNonNull(getSupportActionBar()).hide();
+        SharedPreferences appSettingPrefs = getSharedPreferences("AppSettingPrefs", 0);
+        @SuppressLint("CommitPrefEdits") SharedPreferences.Editor sharedPrefsEdit = appSettingPrefs.edit();
+        boolean isNightModeOn = appSettingPrefs.getBoolean("NightMode", false);
+        if(isNightModeOn){
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
+        } else {
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+        }
 
         //_______________________UI_________________________
             //CONNECTION
@@ -166,7 +177,7 @@ public class MainActivity extends AppCompatActivity {
                 //Disconnect
                 connectedThread.cancel();
                 btnPower.setCardBackgroundColor(Color.rgb(97, 132, 216));
-                txtBluetoothStatus.setTextColor(Color.WHITE);
+                txtBluetoothStatus.setTextColor(Color.parseColor("#6184D8"));
                 txtBluetoothStatus.setText("Press to connect");
                 isConnected = false;
                 try {
@@ -399,7 +410,7 @@ public class MainActivity extends AppCompatActivity {
                             break;
                         case BluetoothAdapter.STATE_ON:
                             txtBluetoothStatus.setText("Press to connect");
-                            txtBluetoothStatus.setTextColor(Color.rgb(250,250,250));
+                            txtBluetoothStatus.setTextColor(Color.parseColor("#6184D8"));
                             progressBar.setVisibility(View.GONE);
                             btnPower.setCardBackgroundColor(Color.rgb(97,132,216));
                             btnPower.setEnabled(true);
