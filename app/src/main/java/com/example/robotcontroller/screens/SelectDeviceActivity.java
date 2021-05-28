@@ -1,4 +1,4 @@
-package com.example.robotcontroller;
+package com.example.robotcontroller.screens;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -18,6 +18,9 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 
+import com.example.robotcontroller.adapters.DeviceListAdapter;
+import com.example.robotcontroller.R;
+import com.example.robotcontroller.models.DeviceInfoModel;
 import com.google.android.material.snackbar.Snackbar;
 
 import java.util.ArrayList;

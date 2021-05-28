@@ -1,5 +1,6 @@
-package com.example.robotcontroller;
+package com.example.robotcontroller.screens;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.cardview.widget.CardView;
@@ -10,6 +11,7 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
@@ -18,13 +20,14 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
-import android.os.Parcelable;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.example.robotcontroller.R;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -37,7 +40,6 @@ public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
 
     private String deviceName = null;
-    private String deviceAddress;
     public static Handler handler;
     public static BluetoothSocket mmSocket;
     public static ConnectedThread connectedThread;
@@ -57,7 +59,8 @@ public class MainActivity extends AppCompatActivity {
             "7",    //  talk
             "8",    //  dance
             "9",    //  time
-            "10"    // stop
+            "10",   // stop
+            "11",   //shutdown
     };
 
     //CONNECTION
@@ -73,7 +76,6 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         Objects.requireNonNull(getSupportActionBar()).hide();
         SharedPreferences appSettingPrefs = getSharedPreferences("AppSettingPrefs", 0);
-        @SuppressLint("CommitPrefEdits") SharedPreferences.Editor sharedPrefsEdit = appSettingPrefs.edit();
         boolean isNightModeOn = appSettingPrefs.getBoolean("NightMode", false);
         if(isNightModeOn){
             AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
@@ -100,6 +102,7 @@ public class MainActivity extends AppCompatActivity {
         final CardView btnDance = findViewById(R.id.btnDance);
         final CardView btnTime = findViewById(R.id.btnTime);
         final CardView btnStop = findViewById(R.id.btnStop);
+        final CardView btnShutdown = findViewById(R.id.btnShutdown);
 
 
         //______________________FIRST START____________________________
@@ -107,7 +110,7 @@ public class MainActivity extends AppCompatActivity {
         deviceName = getIntent().getStringExtra("deviceName");
         if (deviceName != null){
             // Get the device (Bluetooth) address
-            deviceAddress = getIntent().getStringExtra("deviceAddress");
+            String deviceAddress = getIntent().getStringExtra("deviceAddress");
             // Show progress and connection status
             txtBluetoothStatus.setText("Connecting to " + deviceName + "...");
             txtBluetoothStatus.setTextColor(Color.rgb(247, 221, 114));
@@ -117,7 +120,7 @@ public class MainActivity extends AppCompatActivity {
 
             // Creating bluetooth connection
             BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-            createConnectThread = new CreateConnectThread(bluetoothAdapter,deviceAddress);
+            createConnectThread = new CreateConnectThread(bluetoothAdapter, deviceAddress);
             createConnectThread.start();
         }
 
@@ -204,6 +207,22 @@ public class MainActivity extends AppCompatActivity {
         btnDance.setOnClickListener(v -> checkConnectionAndTransmitData(cmds[8]));        //8
         btnTime.setOnClickListener(v -> checkConnectionAndTransmitData(cmds[9]));         //9
         btnStop.setOnClickListener(v -> checkConnectionAndTransmitData(cmds[10]));         //10
+        btnShutdown.setOnClickListener(v -> {
+            if(isConnected){
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+
+                builder.setMessage("Are you sure you want to shut down the robot?")
+                        .setPositiveButton("YES", (dialog, which) -> {
+                            checkConnectionAndTransmitData(cmds[11]);
+                            dialog.cancel();
+                        })
+                        .setNegativeButton("NO", (dialog, which) -> dialog.cancel());
+                AlertDialog dialog = builder.create();
+                dialog.show();
+            } else {
+                Toast.makeText(this, "Please connect connect to the board and try again!", Toast.LENGTH_SHORT).show();
+            }
+        });      //11
     }
 
     // check bluetooth connection before transmit data

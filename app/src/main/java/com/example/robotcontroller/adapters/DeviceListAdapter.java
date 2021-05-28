@@ -1,4 +1,4 @@
-package com.example.robotcontroller;
+package com.example.robotcontroller.adapters;
 
 import android.content.Intent;
 import android.content.Context;
@@ -11,12 +11,16 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.robotcontroller.R;
+import com.example.robotcontroller.models.DeviceInfoModel;
+import com.example.robotcontroller.screens.MainActivity;
+
 import java.util.List;
 
 public class DeviceListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
-    private Context context;
-    private List<Object> deviceList;
+    private final Context context;
+    private final List<Object> deviceList;
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
         TextView textName, textAddress;
@@ -51,7 +55,7 @@ public class DeviceListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
 
         // When a device is selected
         itemHolder.linearLayout.setOnClickListener(view -> {
-            Intent intent = new Intent(context,MainActivity.class);
+            Intent intent = new Intent(context, MainActivity.class);
             // Send device details to the MainActivity
             intent.putExtra("deviceName", deviceInfoModel.getDeviceName());
             intent.putExtra("deviceAddress",deviceInfoModel.getDeviceHardwareAddress());

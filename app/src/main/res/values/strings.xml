@@ -21,4 +21,5 @@
     <string name="toast_unable_to_connect">Unable to connect device</string>
     <string name="toast_connection_lost">Device connection was lost</string>
     <string name="action_dark_mode">action dark mode</string>
+    <string name="d_ng_l_i">Dừng lại</string>
 </resources>

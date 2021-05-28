@@ -13,8 +13,8 @@
         android:roundIcon="@drawable/we_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.RobotController">
-        <activity android:name=".SelectDeviceActivity"></activity>
-        <activity android:name=".MainActivity"
+        <activity android:name=".screens.SelectDeviceActivity" />
+        <activity android:name=".screens.MainActivity"
             android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
